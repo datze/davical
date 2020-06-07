@@ -47,6 +47,7 @@ RUN	apk --update add \
 	php7-pdo \
 	php7-pdo_pgsql \
 	php7-calendar \
+	php7-session \
 	perl \
 	perl-yaml \
 	perl-dbd-pg \
