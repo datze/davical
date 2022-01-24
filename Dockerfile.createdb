@@ -1,0 +1,61 @@
+#Version 0.4
+#---------------------------------------------------------------------
+#Default configuration: hostname: davical.example
+#			user: admin			
+#			pass: 12345
+#---------------------------------------------------------------------
+
+FROM 	alpine
+MAINTAINER https://github.com/datze 
+
+ARG     TIME_ZONE "Europe/Rome"
+ENV	TIME_ZONE=$TIME_ZONE
+
+ARG     HOST_NAME "davical.example"
+ENV	HOST_NAME=$HOST_NAME
+
+
+# apk
+RUN	apk --update add \
+	sudo \
+	bash \
+	less \
+	sed \
+	postgresql \
+	perl \
+	perl-yaml \
+	perl-dbd-pg \
+	perl-dbi \
+	git \
+# git
+	&& git clone https://gitlab.com/davical-project/awl.git /usr/share/awl/ \
+	&& git clone https://gitlab.com/davical-project/davical.git /usr/share/davical/ \
+	&& rm -rf /usr/share/davical/.git /usr/share/awl/.git/ \
+	&& apk del git
+
+
+# config files, shell scripts
+COPY 	initialize_db.sh /sbin/initialize_db.sh
+
+RUN	cd /usr/share/davical/ \
+	&& find ./ -type d -exec chmod u=rwx,g=rx,o=rx '{}' \; \
+	&& find ./ -type f -exec chmod u=rw,g=r,o=r '{}' \; \
+	&& find ./ -type f -name *.sh -exec chmod u=rwx,g=r,o=rx '{}' \; \
+	&& find ./ -type f -name *.php -exec chmod u=rwx,g=rx,o=r '{}' \; \
+	&& chmod o=rx /usr/share/davical/dba/update-davical-database \
+	&& chmod o=rx /usr/share/davical \
+	&& cd /usr/share/awl/ \
+	&& find ./ -type d -exec chmod u=rwx,g=rx,o=rx '{}' \; \
+	&& find ./ -type f -exec chmod u=rw,g=r,o=r '{}' \; \
+	&& find ./ -type f -name *.sh -exec chmod u=rwx,g=rx,o=r '{}' \; \
+	&& find ./ -type f -name *.sh -exec chmod u=rwx,g=r,o=rx '{}' \; \
+	&& chmod o=rx /usr/share/awl \
+        && mkdir /etc/davical \
+# permissions for shell scripts and config files
+ 	&& chmod 0755 /sbin/initialize_db.sh \
+	&& chmod -R u=rwx,g=rx,o= /etc/davical \
+# clean-up etc
+	&& rm -rf /var/cache/apk/* \
+	&& mkdir /run/postgresql \
+	&& chmod a+w /run/postgresql
+

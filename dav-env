@@ -1,0 +1,7 @@
+ADMIN_PASSWORD=1234
+DAVICAL_APP_PASSWORD=654321
+DAVICAL_APP_USER=davical_app
+DAVICAL_DBA_PASSWORD=123456
+DAVICAL_DBA_USER=davical_dba
+DBAOPTS="--dbhost=postgres --dbuser davical_dba --dbpass 123456 "
+PSQLOPTS="-U davical_dba -h postgres -p 5432 "

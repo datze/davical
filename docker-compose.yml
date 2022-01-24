@@ -1,0 +1,112 @@
+version: '3'
+services:
+
+  davical:
+    build: 
+      context: .
+      args:
+        TIME_ZONE: Europe/Paris
+    ports:
+      - "8050:80"
+    env_file: dav-env
+    volumes: 
+      - /var/davical/config:/config:ro
+    restart: unless-stopped
+    depends_on:
+       postgres:
+        condition: service_healthy
+       createdb:
+        condition: service_completed_successfully
+    entrypoint: ["/sbin/apache2_start.sh"]
+
+  createdb:
+    build: 
+      context: .
+      dockerfile: Dockerfile.createdb
+      args:
+        TIME_ZONE: Europe/Paris
+    env_file: dav-env
+    depends_on:
+       postgres:
+        condition: service_healthy
+    entrypoint: ["/sbin/initialize_db.sh"]
+
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: eorihasdfasdf
+      DAVICAL_DBA_PASSWORD: 123456
+      DAVICAL_APP_PASSWORD: 654321
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "psql -U postgres -c 'select 1'|grep -q 1" ]
+      interval: 5s
+      timeout: 1s
+      retries: 30
+
+
+  openldap:
+    image: osixia/openldap:latest
+    container_name: openldap
+    environment:
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_BASE_DN: ""
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_PASSWORD: "config"
+      LDAP_READONLY_USER: "false"
+      #LDAP_READONLY_USER_USERNAME: "readonly"
+      #LDAP_READONLY_USER_PASSWORD: "readonly"
+      LDAP_RFC2307BIS_SCHEMA: "false"
+      LDAP_BACKEND: "mdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_DH_PARAM_FILENAME: "dhparam.pem"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      #LDAP_REPLICATION_CONFIG_SYNCPROV: 'binddn="cn=admin,cn=config" bindmethod=simple credentials="$$LDAP_CONFIG_PASSWORD" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical'
+      #LDAP_REPLICATION_DB_SYNCPROV: 'binddn="cn=admin,$$LDAP_BASE_DN" bindmethod=simple credentials="$$LDAP_ADMIN_PASSWORD" searchbase="$$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical'
+      #LDAP_REPLICATION_HOSTS: "#PYTHON2BASH:['ldap://ldap.example.org','ldap://ldap2.example.org']"
+      KEEP_EXISTING_CONFIG: "false"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    #volumes:
+    #  - /var/lib/ldap
+    #  - /etc/ldap/slapd.d
+    #  - /container/service/slapd/assets/certs/
+    ports:
+      - "389:389"
+      - "636:636"
+    # For replication to work correctly, domainname and hostname must be
+    # set correctly so that "hostname"."domainname" equates to the
+    # fully-qualified domain name for the host.
+    domainname: "example.org"
+    hostname: "ldap-server"
+
+  
+  webui:
+    image: npenkov/docker-ldap-passwd-webui:latest
+    ports:
+      - "8081:8080"
+    environment:
+      LPW_TITLE: "Change your global password for example.org"
+      LPW_HOST: "openldap"
+      LPW_PORT: "389"
+      LPW_ENCRYPTED: "false"
+      LPW_START_TLS: "false"
+      LPW_SSL_SKIP_VERIFY: "true"
+      LPW_USER_DN: "uid=%s,dc=example,dc=org"
+      LPW_USER_BASE: "dc=example,dc=org"
+      LPW_PATTERN: '.{8,}'
+      LPW_PATTERN_INFO: "Password must be at least 8 characters long."
+
