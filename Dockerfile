@@ -54,8 +54,8 @@ RUN	apk --update add \
 	perl-dbi \
 	git \
 # git
-	&& git clone https://gitlab.com/davical-project/awl.git /usr/share/awl/ \
-	&& git clone https://gitlab.com/davical-project/davical.git /usr/share/davical/ \
+	&& git clone --depth 1 --branch r0.62 https://gitlab.com/davical-project/awl.git /usr/share/awl/ \
+	&& git clone --depth 1 --branch r1.1.10 https://gitlab.com/davical-project/davical.git /usr/share/davical/ \
 	&& rm -rf /usr/share/davical/.git /usr/share/awl/.git/ \
 	&& apk del git \
 # Apache
