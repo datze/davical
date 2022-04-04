@@ -81,7 +81,7 @@ RUN	apk --update add \
 	&& sed -i /ErrorLog/s/^/#/ /etc/apache2/conf.d/ssl.conf \
 	&& sed -i /TransferLog/s/^/#/ /etc/apache2/conf.d/ssl.conf \
 # permissions for shell scripts and config files
- 	&& chmod 0755 /sbin/initialize_db.sh \
+	&& chmod 0755 /sbin/initialize_db.sh \
 	&& chmod 0755 /sbin/backup_db.sh  \
 	&& chmod 0755 /sbin/docker-entrypoint.sh \
 	&& chmod 0755 /sbin/restore_db.sh \
@@ -98,7 +98,7 @@ RUN	apk --update add \
 	&& ln -s /config/rsyslog.conf /etc/rsyslog.d/rsyslog-davical.conf \
 # clean-up etc
 	&& rm -rf /var/cache/apk/* \
- 	&& mkdir -p /run/apache2 \
+	&& mkdir -p /run/apache2 \
 	&& mkdir /run/postgresql \
 	&& chmod a+w /run/postgresql
 
