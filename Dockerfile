@@ -89,9 +89,9 @@ RUN	apk --update add \
 	&& echo -e "\$IncludeConfig /etc/rsyslog.d/*.conf" > /etc/rsyslog.conf \
 	&& chown -R root:apache /etc/davical \
 	&& chmod -R u=rwx,g=rx,o= /etc/davical \
-	&& chown root:apache /config/davical.php \
-	&& chmod u+rwx,g+rx /config/davical.php \
-	&& ln -s /config/apache.conf /etc/apache2/conf.d/davical.conf \	
+	&& chown root:apache /davical.php \
+	&& chmod u+rwx,g+rx /davical.php \
+	&& ln -s /config/apache.conf /etc/apache2/conf.d/davical.conf \
 	&& ln -s /config/davical.php /etc/davical/config.php \
 	&& ln -s /sbin/backup_db.sh /etc/periodic/daily/backup \
 	&& ln -s /config/supervisord.conf /etc/supervisor.d/supervisord.ini \
