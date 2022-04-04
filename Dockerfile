@@ -17,10 +17,10 @@ COPY 	initialize_db.sh /sbin/initialize_db.sh
 COPY	backup_db.sh /sbin/backup_db.sh
 COPY	docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY	restore_db.sh /sbin/restore_db.sh
-COPY	apache.conf /config/apache.conf
-COPY	davical.php /config/davical.php
-COPY	supervisord.conf /config/supervisord.conf
-COPY	rsyslog.conf /config/rsyslog.conf
+COPY	apache.conf /apache.conf
+COPY	davical.php /davical.php
+COPY	supervisord.conf /supervisord.conf
+COPY	rsyslog.conf /rsyslog.conf
 
 # apk
 RUN	apk --update add \
