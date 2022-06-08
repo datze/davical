@@ -7,7 +7,7 @@ echo $TIME_ZONE > /etc/timezone
 apk del tzdata
 
 #PREPARE THE PERMISSIONS FOR VOLUMES
-mkdir 	/config
+mkdir -p /config
 chown -R root:root /config
 chmod -R 755 /config
 mv -n 	/apache.conf /config/apache.conf

@@ -17,10 +17,10 @@ COPY 	initialize_db.sh /sbin/initialize_db.sh
 COPY	backup_db.sh /sbin/backup_db.sh
 COPY	docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY	restore_db.sh /sbin/restore_db.sh
-COPY	apache.conf /config/apache.conf
-COPY	davical.php /config/davical.php
-COPY	supervisord.conf /config/supervisord.conf
-COPY	rsyslog.conf /config/rsyslog.conf
+COPY	apache.conf /apache.conf
+COPY	davical.php /davical.php
+COPY	supervisord.conf /supervisord.conf
+COPY	rsyslog.conf /rsyslog.conf
 
 # apk
 RUN	apk --update add \
@@ -47,14 +47,15 @@ RUN	apk --update add \
 	php7-pdo \
 	php7-pdo_pgsql \
 	php7-calendar \
+	php7-session \
 	perl \
 	perl-yaml \
 	perl-dbd-pg \
 	perl-dbi \
 	git \
 # git
-	&& git clone https://gitlab.com/davical-project/awl.git /usr/share/awl/ \
-	&& git clone https://gitlab.com/davical-project/davical.git /usr/share/davical/ \
+	&& git clone --depth 1 --branch r0.62 https://gitlab.com/davical-project/awl.git /usr/share/awl/ \
+	&& git clone --depth 1 --branch r1.1.10 https://gitlab.com/davical-project/davical.git /usr/share/davical/ \
 	&& rm -rf /usr/share/davical/.git /usr/share/awl/.git/ \
 	&& apk del git \
 # Apache
@@ -80,7 +81,7 @@ RUN	apk --update add \
 	&& sed -i /ErrorLog/s/^/#/ /etc/apache2/conf.d/ssl.conf \
 	&& sed -i /TransferLog/s/^/#/ /etc/apache2/conf.d/ssl.conf \
 # permissions for shell scripts and config files
- 	&& chmod 0755 /sbin/initialize_db.sh \
+	&& chmod 0755 /sbin/initialize_db.sh \
 	&& chmod 0755 /sbin/backup_db.sh  \
 	&& chmod 0755 /sbin/docker-entrypoint.sh \
 	&& chmod 0755 /sbin/restore_db.sh \
@@ -88,16 +89,16 @@ RUN	apk --update add \
 	&& echo -e "\$IncludeConfig /etc/rsyslog.d/*.conf" > /etc/rsyslog.conf \
 	&& chown -R root:apache /etc/davical \
 	&& chmod -R u=rwx,g=rx,o= /etc/davical \
-	&& chown root:apache /config/davical.php \
-	&& chmod u+rwx,g+rx /config/davical.php \
-	&& ln -s /config/apache.conf /etc/apache2/conf.d/davical.conf \	
+	&& chown root:apache /davical.php \
+	&& chmod u+rwx,g+rx /davical.php \
+	&& ln -s /config/apache.conf /etc/apache2/conf.d/davical.conf \
 	&& ln -s /config/davical.php /etc/davical/config.php \
 	&& ln -s /sbin/backup_db.sh /etc/periodic/daily/backup \
 	&& ln -s /config/supervisord.conf /etc/supervisor.d/supervisord.ini \
 	&& ln -s /config/rsyslog.conf /etc/rsyslog.d/rsyslog-davical.conf \
 # clean-up etc
 	&& rm -rf /var/cache/apk/* \
- 	&& mkdir -p /run/apache2 \
+	&& mkdir -p /run/apache2 \
 	&& mkdir /run/postgresql \
 	&& chmod a+w /run/postgresql
 
